@@ -89,7 +89,15 @@ class R1Generator:
                 self.progress+=1
 
 if __name__=='__main__':
-    gsm8k=MsDataset.load('modelscope/gsm8k',subset_name='main',split='train')
+    try:
+        gsm8k=MsDataset.load('modelscope/gsm8k',subset_name='main',split='train')
+    except ValueError as e:
+        msg = str(e)
+        if 'trust_remote_code' in msg or 'requires you to execute the dataset script' in msg:
+            print("Dataset requires `trust_remote_code=True`. Loading with that option (ensure you've inspected remote code).")
+            gsm8k=MsDataset.load('modelscope/gsm8k',subset_name='main',split='train', trust_remote_code=True)
+        else:
+            raise
     r1=R1Generator(threads=THREAD,dataset=gsm8k,samples=SAMPLES)
     r1.begin()
     result=r1.join()
